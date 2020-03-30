@@ -7,39 +7,43 @@ import numpy
 import math
 
 # Palette based on YTVOS color palette
-BASE_PALETTE_4BIT = [[  0,   0,   0],
-                     [236,  94, 102],
-                     [249, 144,  87],
-                     [250, 199,  98],
-                     [153, 199, 148],
-                     [ 97, 179, 177],
-                     [102, 153, 204],
-                     [196, 148, 196],
-                     [171, 120, 102],
-                     [255, 255, 255],
-                     [101, 115, 125],
-                     [ 10,  10,  10],
-                     [ 12,  12,  12],
-                     [ 13,  13,  13],
-                     [ 13,  13,  13],
-                     [ 14,  14,  14]]
+BASE_PALETTE_4BIT = [
+    [0, 0, 0],
+    [236, 94, 102],
+    [249, 144, 87],
+    [250, 199, 98],
+    [153, 199, 148],
+    [97, 179, 177],
+    [102, 153, 204],
+    [196, 148, 196],
+    [171, 120, 102],
+    [255, 255, 255],
+    [101, 115, 125],
+    [10, 10, 10],
+    [12, 12, 12],
+    [13, 13, 13],
+    [13, 13, 13],
+    [14, 14, 14],
+]
 
-DAVIS_PALETTE_4BIT = [[  0,   0,   0],
-                      [128,   0,   0],
-                      [  0, 128,   0],
-                      [128, 128,   0],
-                      [  0,   0, 128],
-                      [128,   0, 128],
-                      [  0, 128, 128],
-                      [128, 128, 128],
-                      [ 64,   0,   0],
-                      [191,   0,   0],
-                      [ 64, 128,   0],
-                      [191, 128,   0],
-                      [ 64,   0, 128],
-                      [191,   0, 128],
-                      [ 64, 128, 128],
-                      [191, 128, 128]]
+DAVIS_PALETTE_4BIT = [
+    [0, 0, 0],
+    [128, 0, 0],
+    [0, 128, 0],
+    [128, 128, 0],
+    [0, 0, 128],
+    [128, 0, 128],
+    [0, 128, 128],
+    [128, 128, 128],
+    [64, 0, 0],
+    [191, 0, 0],
+    [64, 128, 0],
+    [191, 128, 0],
+    [64, 0, 128],
+    [191, 0, 128],
+    [64, 128, 128],
+    [191, 128, 128],
+]
 
 # Implementations of Save Methods
 class ReadSaveImage(object):
@@ -51,6 +55,7 @@ class ReadSaveImage(object):
         if not os.path.exists(path):
             os.makedirs(path)
 
+
 class PngMono(ReadSaveImage):
     def __init__(self):
         super(PngMono, self).__init__()
@@ -59,16 +64,18 @@ class PngMono(ReadSaveImage):
         self.check_path(path)
 
         # Expect a numpy array
-        height, width  = image.shape
-        file = open(path, 'wb')
+        height, width = image.shape
+        file = open(path, "wb")
         writer = png.Writer(width, height, greyscale=True, bitdepth=bitdepth)
-        writer.write(file,image)
+        writer.write(file, image)
+
 
 class ReadSaveYTVOSChallengeLabels(ReadSaveImage):
     def __init__(self, bpalette=BASE_PALETTE_4BIT, palette=None):
         super(ReadSaveYTVOSChallengeLabels, self).__init__()
         self._palette = palette
         self._bpalette = bpalette
+
     @property
     def palette(self):
         return self._palette
@@ -82,21 +89,22 @@ class ReadSaveYTVOSChallengeLabels(ReadSaveImage):
         else:
             palette = self._palette
 
-        bitdepth = int(math.log(len(palette))/math.log(2))
+        bitdepth = int(math.log(len(palette)) / math.log(2))
 
         # Expect a numpy array
-        height, width  = image.shape
-        file = open(path, 'wb')
+        height, width = image.shape
+        file = open(path, "wb")
         writer = png.Writer(width, height, palette=palette, bitdepth=bitdepth)
-        writer.write(file,image)
+        writer.write(file, image)
 
     def read(self, path):
         reader = png.Reader(path)
         width, height, data, meta = reader.read()
         if self._palette is None:
-            self._palette = meta['palette']
+            self._palette = meta["palette"]
         image = numpy.vstack(data)
         return image
+
 
 class ReadSaveDAVISChallengeLabels(ReadSaveImage):
     def __init__(self, bpalette=DAVIS_PALETTE_4BIT, palette=None):
@@ -119,25 +127,25 @@ class ReadSaveDAVISChallengeLabels(ReadSaveImage):
         else:
             palette = self._palette
 
-        bitdepth = int(math.log(len(palette))/math.log(2))
+        bitdepth = int(math.log(len(palette)) / math.log(2))
 
         # Expect a numpy array
-        height, width  = image.shape
-        file = open(path, 'wb')
+        height, width = image.shape
+        file = open(path, "wb")
         writer = png.Writer(width, height, palette=palette, bitdepth=bitdepth)
-        writer.write(file,image)
+        writer.write(file, image)
 
     def read(self, path):
         try:
             reader = png.Reader(path)
             width, height, data, meta = reader.read()
             if self._palette is None:
-                self._palette = meta['palette']
+                self._palette = meta["palette"]
             image = numpy.vstack(data)
             self._height, self._width = image.shape
         except png.FormatError:
             image = numpy.zeros((self._height, self._width))
-            self.save(image,path)
+            self.save(image, path)
 
         return image
 
@@ -180,7 +188,7 @@ class ImageSaveHelper(threading.Thread):
             while not self._queue.empty():
                 # Get an image from the queue
                 args, method = self._queue.get(block=False, timeout=2)
-                #print(fullpath)
+                # print(fullpath)
 
                 # Save image
                 method.save(*args)

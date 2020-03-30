@@ -1,6 +1,6 @@
-
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.clear()
 
@@ -21,9 +21,8 @@ class AverageMeter(object):
         if self.count > 0:
             self.avg = self.sum / self.count
         else:
-            self.avg = 'nan'
+            self.avg = "nan"
 
     def new_epoch(self):
         self.history.append(self.avg)
         self.reset()
-
